@@ -1,0 +1,21 @@
+{
+  "name": "rocklab",
+  "private": true,
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "version": "0.0.1",
+  "description": "Rock Lab: a seeded generator for rocks, and the clusters, outcrops and cliffs built from them along steep ground.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --import ./tests/hooks.js --test",
+    "check:rows": "node --import ./tests/hooks.js scripts/check-rows.js"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.5"
+  }
+}

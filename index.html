@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rock Lab</title>
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #bcd3e6; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #1d2428; }
+    #view { position: fixed; inset: 0; }
+    /* The top row: the name, the tabs (one for each level Rock Lab builds
+       in, small to big), and what the tab on show is. It keeps clear of the
+       panel on the right. */
+    #top { position: fixed; left: 14px; top: 10px; max-width: calc(100vw - 390px); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    #title, #says, #tabs { background: rgba(255, 255, 255, 0.72); border-radius: 8px; }
+    #title { font-size: 15px; font-weight: 600; padding: 6px 12px; }
+    #says { font-size: 13px; padding: 7px 12px; opacity: 0.9; }
+    #tabs { display: flex; gap: 2px; padding: 3px; }
+    #tabs button { font: inherit; font-size: 14px; padding: 4px 13px; border: 0; border-radius: 6px; background: none; color: inherit; cursor: pointer; }
+    #tabs button:hover { background: rgba(29, 36, 40, 0.1); }
+    #tabs button.on { background: #1d2428; color: #fff; font-weight: 600; }
+    #tabs button:focus-visible { outline: 2px solid #1d2428; outline-offset: 1px; }
+    #readout { position: fixed; left: 14px; bottom: 12px; font-size: 13px; line-height: 1.5; background: rgba(255, 255, 255, 0.72); padding: 8px 12px; border-radius: 8px; max-width: min(620px, 80vw); white-space: pre-line; }
+    .label { font-size: 12px; background: rgba(255, 255, 255, 0.74); padding: 1px 7px; border-radius: 6px; white-space: nowrap; }
+    .label.head { font-weight: 600; }
+    /* The panel's rows: a name has a set share of its row and wraps onto
+       more lines; the bar keeps the rest. A long name makes a taller row,
+       never a shorter bar. (As TreeLab's rows do.) */
+    .lil-gui.root { --width: 340px; --name-width: 42%; }
+    .lil-gui .controller > .name { flex: none; box-sizing: border-box; width: var(--name-width); min-width: 0; white-space: normal; overflow-wrap: break-word; line-height: 1.2; padding-top: 3px; padding-bottom: 3px; }
+  </style>
+</head>
+<body>
+  <div id="view"></div>
+  <div id="top">
+    <div id="title">Rock Lab</div>
+    <nav id="tabs" role="tablist" aria-label="What to build"></nav>
+    <div id="says"></div>
+  </div>
+  <div id="readout"></div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
