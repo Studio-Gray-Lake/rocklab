@@ -21,7 +21,7 @@ import { SPOT_X, cliffOf, cliffsOf, hillsOf, stoneOf, testLandOf, thingOf } from
 
 // The page.
 //
-// Four tabs, one for each level Rock Lab builds in, each made only of the
+// Four tabs, one for each level RockLab builds in, each made only of the
 // one before it and a rule:
 //
 // "Stone": one rock on the test slope, a row of it at five ages, and
@@ -518,7 +518,7 @@ function buildRow() {
   clear(row);
   const size = Math.min(settings.size, ROW_MOST);
   const gap = 3.3 * size;
-  // (Something beside the row to compare: Rock Lab's own granite beside
+  // (Something beside the row to compare: RockLab's own granite beside
   // layered rock; beside granite, the workshop's boulder, where this copy has it.)
   const comparing = settings.workshop && (layered() || !!EXTRAS.workshop);
   const places = ROW_AGES.length + (comparing ? 1 : 0);
@@ -540,7 +540,7 @@ function buildRow() {
   });
   const mid = rowX(2);
   rowSpot.set(mid, land.heightAt(mid, rowZ(mid)) + 0.4 * size, rowZ(mid));
-  row.add(label(layered() && tab !== 'stone' ? 'layered rock in courses, Rock Lab' : `${KINDS[settings.kind].name}${asked() > 1 ? ' cluster' : ''}, Rock Lab`, mid, land.heightAt(mid, rowZ(mid)) + high, rowZ(mid), true));
+  row.add(label(layered() && tab !== 'stone' ? 'layered rock in courses, RockLab' : `${KINDS[settings.kind].name}${asked() > 1 ? ' cluster' : ''}, RockLab`, mid, land.heightAt(mid, rowZ(mid)) + high, rowZ(mid), true));
 
   // Beside the row, to compare: for layered rock, a granite stone or
   // cluster of the same size and age; for granite, the workshop's own
@@ -736,7 +736,7 @@ function showCamera() {
 
 // --- The panel, built from the settings table (src/settings.js) ------------------------------
 
-const gui = new GUI({ title: 'Rock Lab' });
+const gui = new GUI({ title: 'RockLab' });
 // A line or two for each row, when it's pointed at (src/settings.js: tip).
 // (The buttons under the view have tips of their own.)
 const ACTION_TIPS = {
@@ -926,7 +926,7 @@ window.rocklab = {
   })),
 };
 
-// --- Which Rock Lab this is, what each release brought, and the welcome ----------------
+// --- Which RockLab this is, what each release brought, and the welcome ----------------
 
 // The version beside the name (vite.config.js says which build this is); a
 // click shows what each release brought.

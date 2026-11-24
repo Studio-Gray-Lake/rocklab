@@ -6,7 +6,7 @@ import { entryOf } from './cluster.js';
 // one mesh of flat facets in their own colours, where it stands in the
 // world. The list of rocks that makes them again (each rock's kind, seed,
 // size, age, thickness, place and turn), the settings, which tab and which
-// Rock Lab ride along in the scene's extras. The file is the viewer's to
+// RockLab ride along in the scene's extras. The file is the viewer's to
 // use for anything: CC0, as LICENSE says.
 
 export const MODEL_LICENCE = 'CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/';
@@ -16,7 +16,7 @@ export const MODEL_LICENCE = 'CC0 1.0: https://creativecommons.org/publicdomain/
 // tab, settings }. Gives { root, rocks, triangles }.
 export function modelOf(meshes, about = {}) {
   const root = new THREE.Group();
-  root.name = 'Rock Lab';
+  root.name = 'RockLab';
   const material = new THREE.MeshStandardMaterial({ name: 'rock', vertexColors: true, roughness: 0.92, flatShading: true });
   const list = [];
   let triangles = 0;

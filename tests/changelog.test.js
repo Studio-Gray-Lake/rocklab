@@ -5,7 +5,7 @@ import { RELEASES } from '../src/changelog.js';
 import { versionLabel, versionSays } from '../src/version.js';
 import { showsWelcome, turnWelcomeOff, welcomeIsOff } from '../src/welcome.js';
 
-// What the page says of itself: which Rock Lab it is (src/version.js), what
+// What the page says of itself: which RockLab it is (src/version.js), what
 // each release brought (src/changelog.js), and the welcome card
 // (src/welcome.js).
 
@@ -27,7 +27,7 @@ test('the version beside the name: the version, then the commit, or the day for 
   assert.equal(versionLabel({ version: '0.2.0', date: '2026-11-25', hash: 'abc1234' }), '0.2.0 · abc1234');
   assert.equal(versionLabel({ version: '0.2.0', dev: true, hash: 'abc1234', changed: true }), '0.2.0 · dev · abc1234+');
   assert.equal(versionLabel(null), '');
-  assert.match(versionSays({ version: '0.2.0', date: '2026-11-25' }), /^Rock Lab 0\.2\.0: built 2026-11-25\./);
+  assert.match(versionSays({ version: '0.2.0', date: '2026-11-25' }), /^RockLab 0\.2\.0: built 2026-11-25\./);
 });
 
 test('the welcome card shows until a viewer asks not to see it again; with no storage, it shows', () => {

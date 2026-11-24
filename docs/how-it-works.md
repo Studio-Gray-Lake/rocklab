@@ -1,6 +1,6 @@
-# How Rock Lab works
+# How RockLab works
 
-Rock Lab makes rocks, and from rocks, clusters, outcrops and cliffs. It
+RockLab makes rocks, and from rocks, clusters, outcrops and cliffs. It
 works bottom-up: every big thing is made of small parts that each look
 right on their own, put together by a few simple rules you can adjust.
 Nothing is carved from one big shape.

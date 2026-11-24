@@ -1,4 +1,4 @@
-// Which Rock Lab this is, said beside its name: so a picture, a list of
+// Which RockLab this is, said beside its name: so a picture, a list of
 // rocks or a fault can be matched to the code that made it.
 //
 // A build says of itself (vite.config.js): { version (package.json's), date
@@ -24,5 +24,5 @@ export function versionSays(build) {
   if (!build?.version) return '';
   const from = build.hash ? `, from commit ${build.hash}${build.changed ? ' with changes not yet committed' : ''}` : '';
   const how = build.dev ? 'the dev server' : `built ${build.date ?? ''}`.trim();
-  return `Rock Lab ${build.version}: ${how}${from}. Click for what each release brought.`;
+  return `RockLab ${build.version}: ${how}${from}. Click for what each release brought.`;
 }

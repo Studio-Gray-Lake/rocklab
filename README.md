@@ -1,4 +1,4 @@
-# Rock Lab
+# RockLab
 
 A generator for rocks, and from rocks, clusters, outcrops and cliffs.
 Everything is made of whole, convex, low-poly rocks, seeded, so the same
@@ -7,7 +7,7 @@ settings always give the same rocks.
 The rule: **build big things from small parts that each look right, put
 together by simple adjustable rules.** Nothing is generated top-down.
 
-Rock Lab is one of the studio's small labs, each working on one part of
+RockLab is one of the studio's small labs, each working on one part of
 world generation on its own, to be brought back together in the studio's
 game.
 
@@ -105,8 +105,8 @@ tests with `node --test`.
 
 ## Licence
 
-Rock Lab's code is under the [PolyForm Noncommercial License 1.0.0](LICENSE): use it, change it and share it for anything noncommercial, but don't sell it or use it commercially.
+RockLab's code is under the [PolyForm Noncommercial License 1.0.0](LICENSE): use it, change it and share it for anything noncommercial, but don't sell it or use it commercially.
 
-**What you make with Rock Lab is yours.** The rocks, rock lists, images and settings you export are dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/): use them for anything, commercial or not, no credit needed.
+**What you make with RockLab is yours.** The rocks, rock lists, images and settings you export are dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/): use them for anything, commercial or not, no credit needed.
 
 three.js and lil-gui are under the MIT licence, and keep it.

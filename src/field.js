@@ -1,7 +1,7 @@
 // A slow field, along a line or over a land: a number that changes
 // gradually with place, so neighbours are alike and far places differ.
 //
-// Everything else in Rock Lab is drawn rock by rock, each draw on its own.
+// Everything else in RockLab is drawn rock by rock, each draw on its own.
 // This is the one thing neighbours share. The edge uses it for where rock
 // gathers and where it thins, and for how the grain's tilt drifts; the
 // land of hills, for where a hard bed is thick and where it's thin.

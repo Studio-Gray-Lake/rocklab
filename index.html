@@ -3,11 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Rock Lab</title>
+  <title>RockLab</title>
+  <!-- (A website that hosts RockLab stamps its own build here as it publishes.) -->
+  <meta name="build" content="dev">
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; background: #bcd3e6; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #1d2428; }
     #view { position: fixed; inset: 0; }
-    /* The top row: the name, the tabs (one for each level Rock Lab builds
+    /* The top row: the name, the tabs (one for each level RockLab builds
        in, small to big), and what the tab on show is. It keeps clear of the
        panel on the right. */
     #top { position: fixed; left: 14px; top: 10px; max-width: calc(100vw - 390px); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -86,13 +88,13 @@
 <body>
   <div id="view"></div>
   <div id="top">
-    <div id="title">Rock Lab <button id="version" type="button" aria-haspopup="dialog"></button></div>
+    <div id="title">RockLab <button id="version" type="button" aria-haspopup="dialog"></button></div>
     <nav id="tabs" role="tablist" aria-label="What to build"></nav>
     <div id="says"></div>
   </div>
   <div id="readout"></div>
   <dialog id="log" aria-labelledby="log-title">
-    <h2 id="log-title">What's new in Rock Lab</h2>
+    <h2 id="log-title">What's new in RockLab</h2>
     <div id="log-list"></div>
     <div class="row">
       <button class="primary" id="log-ok">OK</button>
@@ -100,15 +102,15 @@
     </div>
   </dialog>
   <dialog id="welcome" aria-labelledby="welcome-title">
-    <h2 id="welcome-title">Welcome to Rock Lab</h2>
+    <h2 id="welcome-title">Welcome to RockLab</h2>
     <p>A free tech demo from Studio Gray Lake. Build rock up one step a tab: one stone, a cluster of stones, a cliff of clusters, and a land of hills with rock laid over it.</p>
     <p>Drag to turn, scroll to zoom, right-drag to move. Point at a slider to see what it does. Try "how much rock shows" on the Cliff tab first.</p>
-    <p id="welcome-phone">Rock Lab is 3D and works best on a computer. On a touch screen, pinch to zoom.</p>
+    <p id="welcome-phone">RockLab is 3D and works best on a computer. On a touch screen, pinch to zoom.</p>
     <div class="row">
       <button class="primary" id="welcome-ok" autofocus>OK</button>
       <button id="welcome-never">Don't show this again</button>
     </div>
-    <p><a id="welcome-about" target="_blank" rel="noopener">What is Rock Lab?</a></p>
+    <p><a id="welcome-about" target="_blank" rel="noopener">What is RockLab?</a></p>
   </dialog>
   <script type="module" src="./src/main.js"></script>
 </body>

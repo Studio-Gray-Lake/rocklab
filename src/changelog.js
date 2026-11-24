@@ -1,5 +1,5 @@
-// Rock Lab's release log: what each release brought, newest first. The
-// page shows it when the version beside Rock Lab's name is clicked
+// RockLab's release log: what each release brought, newest first. The
+// page shows it when the version beside RockLab's name is clicked
 // (index.html: #log; src/main.js).
 //
 // One entry a release: { version, date (the day it was released,
@@ -11,10 +11,20 @@
 // top; tests/changelog.test.js holds the top entry to the version in
 // package.json, so a release can't go out without one.
 
-// The studio's news, where Rock Lab's posts are.
+// The studio's news, where RockLab's posts are.
 export const NEWS = 'https://studiograylake.com/news.html';
 
 export const RELEASES = [
+  {
+    version: '0.2.1',
+    date: '2026-11-24',
+    name: 'RockLab, in one word',
+    post: null,
+    changes: [
+      'RockLab is one word now, as on the studio’s website',
+      'A line in the page for the website to stamp its build in',
+    ],
+  },
   {
     version: '0.2',
     date: '2026-11-24',
@@ -26,7 +36,7 @@ export const RELEASES = [
       'Faster: a cliff remade in about half the time, a land in under half, with the same rocks',
       "Ticking a box of the view no longer lays the land's rock again",
       'The panel in colour, a part at a time, with a tooltip on every row and plainer names',
-      "The version beside Rock Lab's name, and this log behind it",
+      "The version beside RockLab's name, and this log behind it",
       'A welcome card on a first visit',
     ],
   },

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-// The land as Rock Lab's placer reads it. A land is handed over as two
+// The land as RockLab's placer reads it. A land is handed over as two
 // functions, its height and its normal at a point, and a third if it has
 // one: how bare the rock is at a point, and which kind. Each is read at a
 // point, from world coordinates alone, so any rectangle of land reads the
@@ -10,7 +10,7 @@ import * as THREE from 'three';
 // - normalAt(x, z, out): the ground's up, a unit vector (written into
 //   `out` when one is given; a plain [x, y, z] is taken too).
 // - rockAt(x, z), if the land has it: { bare, kind }. bare runs from 0
-//   (under soil) to 1 (bare rock); kind is the rock's own name. Rock Lab
+//   (under soil) to 1 (bare rock); kind is the rock's own name. RockLab
 //   makes two kinds, granite and layered; a rock that lies in beds
 //   (basalt, marble, sandstone) is made as layered. A land may name its
 //   rock either way, so a land that knows the bed's own kind can say it.

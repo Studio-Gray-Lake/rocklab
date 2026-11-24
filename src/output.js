@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mulberry32 } from './random.js';
 import { inside, outside } from './granite.js';
 
-// What Rock Lab hands over for each rock: its triangles' corners, their
+// What RockLab hands over for each rock: its triangles' corners, their
 // normals and a colour per facet, and the rock's convex corners (for
 // walking on it). Plain arrays of numbers, made without drawing anything,
 // so they can be made in Node as well as on the page, and the game can

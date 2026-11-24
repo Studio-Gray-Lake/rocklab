@@ -1,14 +1,14 @@
 # The way back into the game
 
-Rock Lab is one of several small labs, each working on one part of how a
+RockLab is one of several small labs, each working on one part of how a
 world is generated, apart from the others. The aim is to bring the parts
 back together in the studio's game. This page says how rocks go back.
 
 ## Two layers
 
-1. **Rock Lab's core,** copied unchanged into the game at a named commit,
+1. **RockLab's core,** copied unchanged into the game at a named commit,
    with a check on the game's side that the copy is still current. The
-   page, the panel and the drawing stay in Rock Lab.
+   page, the panel and the drawing stay in RockLab.
 2. **Rock layouts as plain data:** kind, age, size, seed, place, turn and
    how much shows. The core turns the same data into the same rocks every
    time, so a layout is small to store and easy to check.

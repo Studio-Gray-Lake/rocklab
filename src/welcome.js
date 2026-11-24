@@ -1,7 +1,7 @@
 // The welcome card (index.html: #welcome): whether a visit opens with it,
 // and remembering that a viewer asked not to see it again.
 
-// "What is Rock Lab?" goes here.
+// "What is RockLab?" goes here.
 export const ABOUT = 'https://github.com/Studio-Gray-Lake/rocklab';
 
 // Where the browser keeps "don't show this again" (this viewer's own: never

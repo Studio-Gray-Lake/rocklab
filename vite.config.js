@@ -3,7 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 
-// Rock Lab's dev server, on a port of its own (strictPort: it never
+// RockLab's dev server, on a port of its own (strictPort: it never
 // quietly takes another one).
 
 // Stills, on the dev server only: the page posts a picture of itself
@@ -46,14 +46,14 @@ const stills = {
 
 // A copy on a website (`npm run build:site`, vite's "site" mode) loads that
 // site's own visit counter (/assets/analytics.js, no cookies), and nothing
-// else changes. Rock Lab itself, and any other build of it, loads nothing
+// else changes. RockLab itself, and any other build of it, loads nothing
 // from anywhere.
 const siteAnalytics = {
   name: 'rocklab-site-analytics',
   transformIndexHtml: () => [{ tag: 'script', attrs: { src: '/assets/analytics.js', defer: true }, injectTo: 'body' }],
 };
 
-// Which Rock Lab a build is (src/version.js shows it beside the name): its
+// Which RockLab a build is (src/version.js shows it beside the name): its
 // version (package.json's), the day, whether it's the dev server, and the
 // git commit it was made from if this is a checkout (a downloaded copy has
 // none). A build made for a website (`--mode site`) carries no commit: its

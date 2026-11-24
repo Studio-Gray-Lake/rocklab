@@ -1,6 +1,6 @@
 // The page's settings, in one table.
 //
-// Rock Lab builds in four levels, each made only of the one before it and
+// RockLab builds in four levels, each made only of the one before it and
 // a rule: a stone; a cluster of stones; a cliff of clusters; a land of
 // cliffs. The page has a tab for each (TABS).
 //

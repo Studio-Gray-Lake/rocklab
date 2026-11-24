@@ -1,4 +1,4 @@
-Rock Lab bundles these libraries, which keep their own licences.
+RockLab bundles these libraries, which keep their own licences.
 
 ================================================================
 three.js (https://threejs.org), MIT licence

@@ -5,7 +5,7 @@ import { STARTS, defaultSettings } from '../src/settings.js';
 import { madeOn } from '../src/make.js';
 import { rockOutput } from '../src/output.js';
 
-// What Rock Lab hands over for each rock (src/output.js): plain arrays, a
+// What RockLab hands over for each rock (src/output.js): plain arrays, a
 // colour per facet, and the rock's convex corners.
 
 const clusterOf = (kind) => {

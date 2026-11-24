@@ -2,8 +2,8 @@
   "name": "rocklab",
   "private": true,
   "license": "PolyForm-Noncommercial-1.0.0",
-  "version": "0.2.0",
-  "description": "Rock Lab: a seeded generator for rocks, and the clusters, outcrops and cliffs built from them along steep ground.",
+  "version": "0.2.1",
+  "description": "RockLab: a seeded generator for rocks, and the clusters, outcrops and cliffs built from them along steep ground.",
   "type": "module",
   "scripts": {
     "dev": "vite",
