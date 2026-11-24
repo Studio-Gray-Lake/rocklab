@@ -48,13 +48,20 @@ test('every row has a key of its own, a name, and a start inside its slider', ()
   for (const group of GROUPS) assert.equal(new Set(group.rows.map((row) => row.name)).size, group.rows.length, `two rows of "${group.key}" share a name`);
 });
 
+test('every row has a tip: a line or two, saying what it changes', () => {
+  for (const row of ROWS) {
+    assert.ok(typeof row.tip === 'string' && row.tip.length >= 30 && row.tip.length <= 240, `"${row.key}" has no tip, or one too short or too long (${row.tip?.length})`);
+    assert.ok(/[.!?]$/.test(row.tip), `"${row.key}": its tip doesn't end a sentence`);
+  }
+});
+
 test('the table starts every setting where its maker does: nothing has moved', () => {
   const s = defaultSettings();
   const makers = {
     thick: GRANITE.thick, bed: LAYERED.bed, least: BED.least, under: BED.under,
     pieces: CLUSTER.pieces, mix: CLUSTER.mix, noise: CLUSTER.noise, cross: CLUSTER.cross,
     courses: COURSES.courses, slabs: COURSES.slabs, step: COURSES.step,
-    spots: EDGE.spots, uneven: EDGE.uneven, fallen: EDGE.fallen, rim: EDGE.rim, patchy: EDGE.patchy, patch: EDGE.patch, drift: EDGE.drift,
+    spots: EDGE.spots, uneven: EDGE.uneven, rocky: EDGE.rocky, fallen: EDGE.fallen, rim: EDGE.rim, patchy: EDGE.patchy, patch: EDGE.patch, drift: EDGE.drift,
     steep: LAND_DEFAULTS.steep,
     hillCount: HILLS.count, hilly: HILLS.hilly, hardBeds: HILLS.beds, bandTall: HILLS.tall, bandSteep: HILLS.steep,
     bandUneven: HILLS.uneven, bedTilt: HILLS.tilt, bedToward: HILLS.toward,
@@ -74,7 +81,7 @@ test('the table starts every setting where its maker does: nothing has moved', (
   assert.deepEqual(s, {
     kind: 'granite', shows: 0.8, age: 0.15, size: 4, thick: 0.6, bed: 0.3, seed: 1, slant: 35, lean: 0, turn: 20, least: 0.3, under: 45,
     pieces: 8, mix: 0.5, noise: 0.15, cross: 0.35, courses: 3, slabs: 3, step: 0.45,
-    spots: 8, uneven: 0.6, fallen: 0.6, rim: 0.6, patchy: 0, patch: 9, drift: 0, steep: 60, where: 0.45,
+    spots: 8, uneven: 0.6, fallen: 0.6, rim: 0.6, rocky: 0, patchy: 0, patch: 9, drift: 0, steep: 60, where: 0.45,
     landSeed: 1, hillCount: 4, hilly: 5, hardBeds: 2, bandTall: 5, bandSteep: 60, bandUneven: 0.5, bedTilt: 0, bedToward: 30,
     rock: true, byPlace: true, slopeSay: 1, shadows: true, labels: true, workshop: true, contours: true, marks: true, walk: true,
   });

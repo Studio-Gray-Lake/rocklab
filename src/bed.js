@@ -55,10 +55,32 @@ function insidePoints(shape) {
   return points;
 }
 
+// Whether (x, y, z) is inside any of the neighbours. neighbours: a list of
+// rocks, or (from bedRock) the same list with the few near the rock being
+// bedded picked out: { all, near, box }. A point inside the box is asked of
+// the near ones only (no other rock's box reaches it, so none of them can
+// hold it); a point outside it, of them all. The same answer, sooner.
 const within = (neighbours, x, y, z) => {
-  for (const r of neighbours) if (inside(r, x, y, z, 1e-4)) return true;
+  let list = neighbours;
+  if (neighbours.box) {
+    const [x0, y0, z0, x1, y1, z1] = neighbours.box;
+    list = x >= x0 && x <= x1 && y >= y0 && y <= y1 && z >= z0 && z <= z1 ? neighbours.near : neighbours.all;
+  }
+  for (const r of list) if (inside(r, x, y, z, 1e-4)) return true;
   return false;
 };
+// The neighbours near a rock about to be bedded at `spot`: a box round it,
+// as far as the rock reaches (`reach`) and a good way more, and the rocks
+// whose own boxes come within it.
+function nearTo(neighbours, spot, reach) {
+  if (neighbours.length < 4) return neighbours;
+  const r = 3 * reach;
+  const box = [spot.x - r, spot.y - r, spot.z - r, spot.x + r, spot.y + r, spot.z + r];
+  const slack = 2e-4;
+  const near = neighbours.filter((o) => o.max[0] >= box[0] - slack && o.min[0] <= box[3] + slack
+    && o.max[1] >= box[1] - slack && o.min[1] <= box[4] + slack && o.max[2] >= box[2] - slack && o.min[2] <= box[5] + slack);
+  return { all: neighbours, near, box };
+}
 
 // How far the rock's undersides (its faces within `under` degrees of
 // facing the land) stand above the land at most (m, measured square to the
@@ -66,7 +88,9 @@ const within = (neighbours, x, y, z) => {
 // the rock as if moved by this much (a vector), without rebuilding it.
 const NO_SHIFT = new THREE.Vector3();
 const NONE = [];
-export function undersideShowing(rock, land, under = BED.under, shift = NO_SHIFT, neighbours = NONE) {
+// limit: past this, the answer is only that it shows more (it stops at the
+// first point that does).
+export function undersideShowing(rock, land, under = BED.under, shift = NO_SHIFT, neighbours = NONE, limit = Infinity) {
   const { positions, normals } = rock;
   const nl = new THREE.Vector3();
   const facing = -Math.cos(degToRad(under));
@@ -80,9 +104,15 @@ export function undersideShowing(rock, land, under = BED.under, shift = NO_SHIFT
     if (above > 0 && within(neighbours, x, y, z)) return;
     showing = above;
   };
+  const past = () => showing > limit;
+  // (A face within 90° - under of looking straight up can't face any land,
+  // however steep: the land is never past upright. With a degree to
+  // spare, such a face is passed over without reading the land under it.)
+  const upward = under < 89 ? Math.cos(degToRad(90 - under - 1)) : Infinity;
   for (let i = 0; i < normals.length / 3; i++) {
     const p = positions.subarray(i * 9, i * 9 + 9);
     const [nx, ny, nz] = [normals[i * 3], normals[i * 3 + 1], normals[i * 3 + 2]];
+    if (ny > upward) continue;
     // Its corners, the middles of its sides, and its middle.
     for (let a = 0; a < 3; a++) {
       const b = (a + 1) % 3;
@@ -90,6 +120,7 @@ export function undersideShowing(rock, land, under = BED.under, shift = NO_SHIFT
       at((p[a * 3] + p[b * 3]) / 2, (p[a * 3 + 1] + p[b * 3 + 1]) / 2, (p[a * 3 + 2] + p[b * 3 + 2]) / 2, nx, ny, nz);
     }
     at((p[0] + p[3] + p[6]) / 3, (p[1] + p[4] + p[7]) / 3, (p[2] + p[5] + p[8]) / 3, nx, ny, nz);
+    if (past()) return showing;
   }
   return showing;
 }
@@ -211,18 +242,35 @@ export function bedRock(shape, land, {
     low = Math.min(low, t);
     high = Math.max(high, t);
   }
+  // (Only the neighbours near enough to matter are asked about most points.)
+  const reach = Math.max(...turned.map((p) => p.length())) + (high - low);
+  const around = nearTo(neighbours, spot, reach);
 
   // The rock's middle is at spot + n·t. The share of it in the land, or in
   // a neighbour, falls as t rises.
+  // (While t stays between -high and -low, as the search below keeps it, a
+  // sample sweeps a short line; only the neighbours whose boxes that line
+  // comes near can hold it, and only they are asked.)
+  const [t0, t1] = [-high, -low];
+  const slack = 2e-4;
+  const sweeps = samples.map((s) => {
+    const [ax, ay, az] = [spot.x + n.x * t0 + s.x, spot.y + n.y * t0 + s.y, spot.z + n.z * t0 + s.z];
+    const [bx, by, bz] = [spot.x + n.x * t1 + s.x, spot.y + n.y * t1 + s.y, spot.z + n.z * t1 + s.z];
+    const [x0, x1, y0, y1, z0, z1] = [Math.min(ax, bx), Math.max(ax, bx), Math.min(ay, by), Math.max(ay, by), Math.min(az, bz), Math.max(az, bz)];
+    return (around.near ?? around).filter((o) => o.max[0] >= x0 - slack && o.min[0] <= x1 + slack
+      && o.max[1] >= y0 - slack && o.min[1] <= y1 + slack && o.max[2] >= z0 - slack && o.min[2] <= z1 + slack);
+  });
   const sharesAt = (t) => {
+    const swept = t >= t0 && t <= t1;
     let under = 0;
     let clear = 0;
-    for (const s of samples) {
+    for (let k = 0; k < samples.length; k++) {
+      const s = samples[k];
       const px = spot.x + n.x * t + s.x;
       const py = spot.y + n.y * t + s.y;
       const pz = spot.z + n.z * t + s.z;
       if (py < land.heightAt(px, pz)) under++;
-      else if (!within(neighbours, px, py, pz)) clear++;
+      else if (!within(swept ? sweeps[k] : around, px, py, pz)) clear++;
     }
     return { buried: under / samples.length, exposed: clear / samples.length };
   };
@@ -245,9 +293,15 @@ export function bedRock(shape, land, {
   const shift = new THREE.Vector3();
   const showingAt = (deeper) => {
     shift.copy(n).multiplyScalar(-deeper);
-    return Math.max(undersideShowing(rock, land, under, shift, neighbours), middleShowing(rock, land, shift, neighbours));
+    return Math.max(undersideShowing(rock, land, under, shift, around), middleShowing(rock, land, shift, around));
   };
-  const passes = (deeper) => showingAt(deeper) <= 0.8 * BED.slack;
+  // (Whether it passes needs only whether any point shows past the
+  // limit: the middle first, then the undersides, stopping at the first.)
+  const passes = (deeper) => {
+    const limit = 0.8 * BED.slack;
+    shift.copy(n).multiplyScalar(-deeper);
+    return middleShowing(rock, land, shift, around) <= limit && undersideShowing(rock, land, under, shift, around, limit) <= limit;
+  };
   if (!passes(0)) {
     let fails = 0;
     let deeper = 0;

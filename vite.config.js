@@ -1,4 +1,5 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 
@@ -43,10 +44,36 @@ const stills = {
   },
 };
 
-export default defineConfig({
-  plugins: [stills],
+// A copy on a website (`npm run build:site`, vite's "site" mode) loads that
+// site's own visit counter (/assets/analytics.js, no cookies), and nothing
+// else changes. Rock Lab itself, and any other build of it, loads nothing
+// from anywhere.
+const siteAnalytics = {
+  name: 'rocklab-site-analytics',
+  transformIndexHtml: () => [{ tag: 'script', attrs: { src: '/assets/analytics.js', defer: true }, injectTo: 'body' }],
+};
+
+// Which Rock Lab a build is (src/version.js shows it beside the name): its
+// version (package.json's), the day, whether it's the dev server, and the
+// git commit it was made from if this is a checkout (a downloaded copy has
+// none). A build made for a website (`--mode site`) carries no commit: its
+// version and its day say which it is.
+const buildOf = (mode, dev) => {
+  const build = { version: JSON.parse(readFileSync('package.json', 'utf8')).version, date: new Date().toISOString().slice(0, 10), dev };
+  if (mode === 'site') return build;
+  try {
+    const git = (args) => execSync(`git ${args}`, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+    return { ...build, hash: git('rev-parse --short HEAD'), changed: git('status --porcelain').length > 0 };
+  } catch {
+    return build;
+  }
+};
+
+export default defineConfig(({ mode, command }) => ({
+  define: { __ROCKLAB__: JSON.stringify(buildOf(mode, command === 'serve')) },
+  plugins: mode === 'site' ? [stills, siteAnalytics] : [stills],
   base: './',
   resolve: { dedupe: ['three'] },
   build: { chunkSizeWarningLimit: 1000 }, // (kB: one page, three.js and all)
   server: { port: 5211, strictPort: true },
-});
+}));

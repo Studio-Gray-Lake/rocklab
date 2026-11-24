@@ -54,7 +54,7 @@ export function cliffOf(land, s) {
     ? makeLayers(land, { ...sharedOf(s), fallen: s.fallen, patchy: s.patchy, patch: s.patch })
     : makeEdge(land, {
       ...sharedOf(s), spots: s.spots, uneven: s.uneven, fallen: s.fallen, rim: s.rim,
-      patchy: s.patchy, patch: s.patch, drift: s.drift,
+      patchy: s.patchy, patch: s.patch, drift: s.drift, rocky: s.rocky,
     });
 }
 
@@ -79,7 +79,7 @@ export function hillsOf(s) {
 export function cliffsOf(s) {
   return {
     ...sharedOf(s, kindOn('land', s.kind)), spots: s.spots, uneven: s.uneven, fallen: s.fallen, rim: s.rim,
-    patchy: s.patchy, patch: s.patch, drift: s.drift, slope: s.slopeSay,
+    patchy: s.patchy, patch: s.patch, drift: s.drift, slope: s.slopeSay, rocky: s.rocky,
   };
 }
 

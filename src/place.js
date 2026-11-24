@@ -44,7 +44,7 @@ export const PLACE = {
   level: 2,    // degrees: ground gentler than this is the plain, with no stones strewn on it
   strewn: 8 * 8 / (LAND_ROCK.strewn.cell * LAND_ROCK.strewn.cell), // stones' places to a cell, as over the hills
 };
-const TIER = { face: 0, pale: 1, rim: 2, fallen: 3, strewn: 4 };
+const TIER = { face: 0, pale: 1, fill: 2, rim: 3, fallen: 4, strewn: 5 };
 const RANK = { big: 0, mid: 1, small: 2 };
 
 // A number of its own for each thing laid, from the seed and its name.
@@ -70,7 +70,7 @@ const hit = (x, z, reach) => (o) => o.max[0] > x - reach && o.min[0] < x + reach
 export function placerFor(land, {
   seed = 1, shows = 0.6, spots = EDGE.spots, uneven = EDGE.uneven, size = LAND_ROCK.size, pieces = CLUSTER.pieces,
   least = BED.least, under = BED.under, fallen = 0, rim = 0, patchy = EDGE.patchy, patch = EDGE.patch, drift = EDGE.drift,
-  slope = 0, kind = 'granite', ...cluster
+  slope = 0, kind = 'granite', rocky = EDGE.rocky, ...cluster
 } = {}) {
   const read = typeof land?.at === 'function' ? land : landIn(land, { kind });
   const say = clamp(slope, 0, 1);
@@ -110,7 +110,8 @@ export function placerFor(land, {
     const key = `${cx},${cz}`;
     if (cells.has(key)) return cells.get(key);
     const items = [];
-    const own = cellSpots(read, cx, cz, { seed, spots, uneven });
+    const fill = clamp(rocky, 0, 1);
+    const own = cellSpots(read, cx, cz, { seed, spots, uneven, size, rocky: fill });
 
     for (const spot of own.face) {
       const showing = showingAt(spot);
@@ -130,6 +131,28 @@ export function placerFor(land, {
           ...cluster, ...grain, kind: spot.kind,
           x: at.x, z: at.z, seed: seedOf(seed, spot.id), size: big, pieces: many, least, under,
           shows: lie ? lerp(EDGE.least, 1, here) * lerp(1, lerp(EDGE.slope.deeper, 1, lie.shows), say) : lerp(EDGE.least, 1, here),
+          ...(lie ? { grain: lie.grain, flat: lie.flat } : {}),
+          neighbours,
+        }),
+      });
+    }
+
+    // How rocky: the face filled between the clusters (as along an edge):
+    // each place in once how rocky is past its own number.
+    for (const spot of own.fill) {
+      const showing = showingAt(spot);
+      const { at, r } = spot;
+      if (!(fill > 0.98 * r[2]) || !(showing > 0.05)) continue;
+      const grain = grainAt(spot.foot[0], spot.foot[1], Math.atan2(-spot.reading.up[0], -spot.reading.up[1]));
+      const lie = say > 0 ? slopeSays(read, at, { ...asked, ...grain }, say) : null;
+      const big = size * lerp(EDGE.fill.size[0], EDGE.fill.size[1], r[3]) * gradeOf(spot.reading);
+      items.push({
+        id: spot.id, part: 'face', at, reach: PLACE.spread * big,
+        rank: [TIER.fill, 0, spot.up],
+        make: (neighbours) => makeCluster(read, {
+          ...cluster, ...grain, kind: spot.kind,
+          x: at.x, z: at.z, seed: seedOf(seed, spot.id), size: big, pieces: Math.max(1, Math.round(pieces * EDGE.fill.pieces)), least, under,
+          shows: lie ? lerp(EDGE.least, 1, showing) * lerp(1, lerp(EDGE.slope.deeper, 1, lie.shows), say) : lerp(EDGE.least, 1, showing),
           ...(lie ? { grain: lie.grain, flat: lie.flat } : {}),
           neighbours,
         }),

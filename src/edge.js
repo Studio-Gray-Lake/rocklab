@@ -136,6 +136,17 @@ export const EDGE = {
     back: 0.45,        // how much further back over the top the rim's rock reaches (as place's `up`)
   },
   // Noise: a slow field along the edge.
+  // How rocky: the face filled between the clusters, from nothing (only
+  // the clusters) to rocked out end to end and top to bottom.
+  rocky: 0,
+  fill: {
+    size: [0.45, 0.65], // a filling cluster's biggest rock, as a share of the size asked
+    along: 0.8,         // its places this many of those sizes apart along the face...
+    up: 0.8,            // ...and up it
+    from: -0.06,        // from just before the foot (0) ...
+    to: 1,              // ... to the top (1)
+    pieces: 0.6,        // its pieces, as a share of the pieces asked
+  },
   patchy: 0,           // how strongly rock gathers and thins along the edge: 0 an even sprinkle, 1 groups and gaps
   patch: 9,            // m: how long a stretch of more rock, or less, is
   patchRange: [3, 24],
@@ -343,7 +354,7 @@ export function makeEdge(land, settings = {}) {
 export function* edgeSteps(land, {
   seed = 1, shows = 0.6, spots = EDGE.spots, uneven = EDGE.uneven, size = 2.5, pieces = CLUSTER.pieces,
   least = BED.least, under = BED.under, fallen = 0, rim = 0, patchy = EDGE.patchy, patch = EDGE.patch, drift = EDGE.drift,
-  band = testBand(land), others = NONE, slope = 0,
+  band = testBand(land), others = NONE, slope = 0, rocky = EDGE.rocky,
   ...cluster
 } = {}) {
   const say = clamp(slope, 0, 1);
@@ -409,6 +420,54 @@ export function* edgeSteps(land, {
     rocks.push(...made.rocks);
     clusters.push({ spot, rocks: made.rocks });
     yield made.rocks;
+  }
+
+  // How rocky: the face filled between the clusters. A grid of places over
+  // the face, so many along it and, at each, so many up it from foot to
+  // top; each a cluster with numbers of its own (a stream of each place
+  // along, so nothing above moves, and the grid doesn't shift as the slider
+  // does). A place is in once how rocky is past its own number: at nothing
+  // none, at full all. Where the edge falls away to nothing, none.
+  const fill = clamp(rocky, 0, 1);
+  if (fill > 0) {
+    const F = EDGE.fill;
+    const length = band.to - band.from;
+    const across = Math.max(1, Math.round(length / (size * F.size[1] * F.along)));
+    for (let i = 0; i < across; i++) {
+      const random = mulberry32((seed | 0) * 6151 + 523 + i * 7919);
+      const x = band.from + ((i + 0.5) / across) * length;
+      const asked = showing(x, shows, patches, band);
+      // (How far it is up the face here, foot to top, over the ground.)
+      const [foot, top] = [band.place(x, 0), band.place(x, 1)];
+      const wide = Math.hypot(top.x - foot.x, land.heightAt(top.x, top.z) - land.heightAt(foot.x, foot.z), top.z - foot.z);
+      const rows = Math.max(1, Math.round(wide / (size * F.size[1] * F.up)));
+      for (let j = 0; j < rows; j++) {
+        const r = Array.from({ length: 6 }, () => random());
+        if (!(fill > 0.98 * r[2]) || !(asked > 0.05)) continue;
+        const along = x + (r[0] - 0.5) * 0.6 * (length / across);
+        const up = F.from + ((j + 0.5 + (r[1] - 0.5) * 0.6) / rows) * (F.to - F.from);
+        const at = band.place(along, up);
+        const lie = say > 0 ? slopeAt(along, at) : null;
+        const big = size * lerp(F.size[0], F.size[1], r[3]) * (band.grade ? band.grade(along) : 1);
+        const reach = EDGE.near * big + 1;
+        const made = makeCluster(land, {
+          ...cluster, ...grainAt(along),
+          x: at.x, z: at.z,
+          seed: (seed | 0) * 977 + 100003 + i * 131 + j * 17,
+          size: big, pieces: Math.max(1, Math.round(pieces * F.pieces)), least, under,
+          shows: lie ? lerp(EDGE.least, 1, asked) * lerp(1, lerp(EDGE.slope.deeper, 1, lie.shows), say) : lerp(EDGE.least, 1, asked),
+          ...(lie ? { grain: lie.grain, flat: lie.flat } : {}),
+          neighbours: others.length ? [...others.filter(hit(at.x, at.z, reach)), ...rocks.filter(hit(at.x, at.z, reach))] : rocks.filter(hit(at.x, at.z, reach)),
+        });
+        left += made.left;
+        if (!made.rocks.length) continue;
+        const id = `fill ${i} ${j}`;
+        for (const rock of made.rocks) rock.spot = id;
+        rocks.push(...made.rocks);
+        clusters.push({ spot: { id, rank: 'fill', x: along, up }, rocks: made.rocks });
+        yield made.rocks;
+      }
+    }
   }
   const face = rocks.length;
   const nearTo = (x, z, reach) => (others.length ? [...others.filter(hit(x, z, reach)), ...rocks.filter(hit(x, z, reach))] : rocks.filter(hit(x, z, reach)));

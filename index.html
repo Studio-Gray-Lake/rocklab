@@ -25,18 +25,91 @@
     /* The panel's rows: a name has a set share of its row and wraps onto
        more lines; the bar keeps the rest. A long name makes a taller row,
        never a shorter bar. (As TreeLab's rows do.) */
-    .lil-gui.root { --width: 340px; --name-width: 42%; }
+    /* The panel, light as TreeLab's: dark ink on a pale card. */
+    .lil-gui.root { --width: 340px; --name-width: 42%; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(29, 36, 40, 0.14); }
+    .lil-gui {
+      --background-color: rgba(247, 247, 243, 0.95); --title-background-color: rgba(29, 36, 40, 0.07); --title-text-color: #1d2428;
+      --text-color: #1d2428; --widget-color: rgba(29, 36, 40, 0.09); --hover-color: rgba(29, 36, 40, 0.15); --focus-color: rgba(29, 36, 40, 0.2);
+      --number-color: #2d5a8a; --string-color: #3e6b35; --font-size: 12px; --input-font-size: 12px;
+    }
+    .lil-gui.root > .title { font-weight: 600; }
+    /* Each part of the panel in a washed-out colour of its own: its title,
+       a stripe down its side, a faint wash behind its rows. (As TreeLab's.) */
+    .lil-gui[data-tint] { --wash: 32%; }
+    .lil-gui[data-tint='stone'] { --hue: 210; }
+    .lil-gui[data-tint='grain'] { --hue: 265; }
+    .lil-gui[data-tint='ground'] { --hue: 35; }
+    .lil-gui[data-tint='cluster'] { --hue: 12; }
+    .lil-gui[data-tint='courses'] { --hue: 45; }
+    .lil-gui[data-tint='cliff'] { --hue: 345; }
+    .lil-gui[data-tint='noise'] { --hue: 295; }
+    .lil-gui[data-tint='slope'] { --hue: 110; }
+    .lil-gui[data-tint='hills'] { --hue: 135; }
+    .lil-gui[data-tint='beds'] { --hue: 25; }
+    .lil-gui[data-tint='landRock'] { --hue: 180; }
+    .lil-gui[data-tint='view'] { --hue: 210; --wash: 6%; }
+    .lil-gui[data-tint] > .title { background: hsl(var(--hue) var(--wash) 80% / 0.9); box-shadow: inset 4px 0 0 hsl(var(--hue) var(--wash) 52%); }
+    .lil-gui[data-tint] > .children { background: hsl(var(--hue) var(--wash) 86% / 0.45); box-shadow: inset 4px 0 0 hsl(var(--hue) var(--wash) 52% / 0.55); padding-left: 4px; }
+    .lil-gui .lil-gui .lil-gui[data-tint] > .children { border-left: 0; }
+    /* A row's tip, beside the panel (src/tooltip.js). */
+    #tip {
+      position: fixed; left: 0; top: 0; z-index: 10; max-width: min(250px, 70vw); box-sizing: border-box;
+      padding: 6px 9px; border-radius: 8px; background: #1d2428; color: #f4f6f3;
+      font: 12px / 1.4 system-ui, -apple-system, 'Segoe UI', sans-serif;
+      pointer-events: none; opacity: 0; transition: opacity 0.12s; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    }
+    #tip.on { opacity: 1; }
+    /* The version beside the name: a click shows what each release brought. */
+    #version { margin: 0 0 0 0.3em; padding: 0; border: 0; background: none; font: inherit; font-size: 0.72em; font-weight: 400; color: #4c5559; cursor: pointer; white-space: nowrap; }
+    #version:hover, #version:focus-visible { color: #2d5a8a; text-decoration: underline; }
+    #version:empty { display: none; }
+    /* The cards: the welcome on a first visit, and the release log. */
+    dialog {
+      border: 1px solid rgba(29, 36, 40, 0.15); border-radius: 12px; padding: 16px 18px; max-width: min(380px, calc(100vw - 48px));
+      background: #f7f7f3; color: #1d2428; font: 13px / 1.45 system-ui, -apple-system, 'Segoe UI', sans-serif;
+    }
+    dialog::backdrop { background: rgba(20, 26, 28, 0.35); }
+    dialog h2 { margin: 0 0 8px; font-size: 15px; }
+    dialog h3 { margin: 12px 0 4px; font-size: 13px; }
+    dialog p { margin: 0 0 10px; color: #4c5559; }
+    dialog ul { margin: 0 0 8px; padding-left: 18px; color: #4c5559; }
+    dialog .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+    dialog button, dialog a.button {
+      font: inherit; padding: 5px 12px; border-radius: 7px; border: 1px solid rgba(29, 36, 40, 0.2); background: #fff; color: inherit; cursor: pointer; text-decoration: none;
+    }
+    dialog button.primary { background: #1d2428; color: #fff; border-color: #1d2428; }
+    #log-list { max-height: 55vh; overflow-y: auto; }
+    @media (pointer: fine) { #welcome-phone { display: none; } }
     .lil-gui .controller > .name { flex: none; box-sizing: border-box; width: var(--name-width); min-width: 0; white-space: normal; overflow-wrap: break-word; line-height: 1.2; padding-top: 3px; padding-bottom: 3px; }
   </style>
 </head>
 <body>
   <div id="view"></div>
   <div id="top">
-    <div id="title">Rock Lab</div>
+    <div id="title">Rock Lab <button id="version" type="button" aria-haspopup="dialog"></button></div>
     <nav id="tabs" role="tablist" aria-label="What to build"></nav>
     <div id="says"></div>
   </div>
   <div id="readout"></div>
+  <dialog id="log" aria-labelledby="log-title">
+    <h2 id="log-title">What's new in Rock Lab</h2>
+    <div id="log-list"></div>
+    <div class="row">
+      <button class="primary" id="log-ok">OK</button>
+      <a class="button" id="log-news" target="_blank" rel="noopener">All the news</a>
+    </div>
+  </dialog>
+  <dialog id="welcome" aria-labelledby="welcome-title">
+    <h2 id="welcome-title">Welcome to Rock Lab</h2>
+    <p>A free tech demo from Studio Gray Lake. Build rock up one step a tab: one stone, a cluster of stones, a cliff of clusters, and a land of hills with rock laid over it.</p>
+    <p>Drag to turn, scroll to zoom, right-drag to move. Point at a slider to see what it does. Try "how much rock shows" on the Cliff tab first.</p>
+    <p id="welcome-phone">Rock Lab is 3D and works best on a computer. On a touch screen, pinch to zoom.</p>
+    <div class="row">
+      <button class="primary" id="welcome-ok" autofocus>OK</button>
+      <button id="welcome-never">Don't show this again</button>
+    </div>
+    <p><a id="welcome-about" target="_blank" rel="noopener">What is Rock Lab?</a></p>
+  </dialog>
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>

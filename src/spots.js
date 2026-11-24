@@ -107,7 +107,12 @@ export function upFrom(foot, reading, up) {
 // each { id, foot, r, fall, pale, reading }, so many to every 41 m of
 // foot as along an edge at plenty (edge.js EDGE.lip.most, EDGE.talus.most).
 // Also length: how much foot the cell has.
-export function cellSpots(read, cx, cz, { seed = 1, spots = EDGE.spots, uneven = EDGE.uneven } = {}) {
+// With rocky (how rocky, edge.js EDGE.rocky) past nothing, also the places
+// that fill the face between the clusters (fill): along the standing feet,
+// and at each, rows up the rise from its foot to its top, each with its own
+// numbers (from a stream of the cell's own, so nothing else moves, and the
+// same places whatever how rocky is). size: the size asked (m).
+export function cellSpots(read, cx, cz, { seed = 1, spots = EDGE.spots, uneven = EDGE.uneven, size = LAND_ROCK.size, rocky = 0 } = {}) {
   const { cell } = SPOTS;
   const { pieces } = feetOf(read, { x0: cx * cell, x1: (cx + 1) * cell, z0: cz * cell, z1: (cz + 1) * cell }, { margin: 0 });
   const feet = [];
@@ -122,7 +127,8 @@ export function cellSpots(read, cx, cz, { seed = 1, spots = EDGE.spots, uneven =
   const face = [];
   const rim = [];
   const fallen = [];
-  if (!feet.length) return { face, rim, fallen, length };
+  const fill = [];
+  if (!feet.length) return { face, rim, fallen, fill, length };
 
   const random = mulberry32(cellSeed(seed, cx, cz));
   const metre = 1 / (EDGE.to - EDGE.from); // so many to the test edge's length, to the metre
@@ -155,5 +161,33 @@ export function cellSpots(read, cx, cz, { seed = 1, spots = EDGE.spots, uneven =
       list.push({ id: `${part} ${cx},${cz} ${k}`, cell: [cx, cz], foot, r, fall: own.fall, pale: !own.piece.stands, reading: own.piece.reading });
     }
   }
-  return { face, rim, fallen, length };
+  const standing = feet.filter((f) => f.piece.stands);
+  if (rocky > 0 && standing.length) {
+    const F = EDGE.fill;
+    // (Spaced by how big the rocks are there: where a rise is low its
+    // rocks are smaller, and its places closer.)
+    const spacing = (piece) => size * F.size[1] * gradeOf(piece.reading);
+    // The standing feet laid end to end, each as long as it holds places.
+    let along = 0;
+    const ends = standing.map((f) => {
+      const length = f.length / (spacing(f.piece) * F.along);
+      const end = { ...f, from: along, length };
+      along += length;
+      return end;
+    });
+    const room = mulberry32(cellSeed((seed | 0) ^ 0x5bd1e995, cx, cz));
+    const count = Math.floor(along + room());
+    for (let k = 0; k < count; k++) {
+      const { own, foot } = alongFeet(ends, ((k + 0.5 + (room() - 0.5) * 0.6) / count) * along);
+      const { reading } = own.piece;
+      const rows = Math.max(1, Math.round(Math.hypot(reading.wide, reading.rise) / (spacing(own.piece) * F.up)));
+      for (let j = 0; j < rows; j++) {
+        const r = Array.from({ length: 6 }, () => room());
+        const up = F.from + ((j + 0.5 + (r[1] - 0.5) * 0.6) / rows) * (F.to - F.from);
+        const at = upFrom(foot, reading, up);
+        fill.push({ id: `fill ${cx},${cz} ${k} ${j}`, cell: [cx, cz], foot, up, at, r, fall: own.fall, pale: false, reading, kind: read.rockAt(at.x, at.z).kind });
+      }
+    }
+  }
+  return { face, rim, fallen, fill, length };
 }

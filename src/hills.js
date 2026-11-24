@@ -174,8 +174,7 @@ export function createHills({
   const span = HILLS.usual / Math.max(face - HILLS.usual, 0.1);
   const below = (HILLS.round / 2) * tall * span + 1e-9; // how far under its foot a band's rounded rise begins, at most
   let gap = 0;
-  function lifted(x, z, upTo) {
-    const among = amongBeds(x, z);
+  function lifted(x, z, upTo, among = amongBeds(x, z)) {
     let lift = 0;        // by the beds so far
     let whole = 0;       // what they'd lift a place they'd wholly lifted
     let end = -Infinity; // where the band below is done rising
@@ -204,7 +203,11 @@ export function createHills({
     return gap;
   }
 
-  const heightAt = (x, z) => amongBeds(x, z) + lifted(x, z, feet.length) + tiltAt(x, z);
+  // (The place's height among the beds is worked out once, and handed on.)
+  const heightAt = (x, z) => {
+    const among = amongBeds(x, z);
+    return among + lifted(x, z, feet.length, among) + tiltAt(x, z);
+  };
   function normalAt(x, z, out = new THREE.Vector3()) {
     const E = 0.1;
     const dx = (heightAt(x + E, z) - heightAt(x - E, z)) / (2 * E);

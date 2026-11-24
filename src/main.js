@@ -11,7 +11,12 @@ import { CONTOURS, contourLines } from './contours.js';
 import { EXTRAS } from './extras.js';
 import { placeSteps, placerFor } from './place.js';
 import { groupsOf } from './walk.js';
-import { FIRST_TAB, STARTS, TABS, TAB_KEYS, defaultSettings, kindOn, panelOf, sizeOn } from './settings.js';
+import { FIRST_TAB, STARTS, TABS, TAB_KEYS, defaultSettings, kindOn, panelOf, rowOf, sizeOn } from './settings.js';
+import { attachTooltips } from './tooltip.js';
+import { versionLabel, versionSays } from './version.js';
+import { NEWS, RELEASES } from './changelog.js';
+import { ABOUT, showsWelcome, turnWelcomeOff } from './welcome.js';
+import { exportModel } from './exportModel.js';
 import { SPOT_X, cliffOf, cliffsOf, hillsOf, stoneOf, testLandOf, thingOf } from './make.js';
 
 // The page.
@@ -66,7 +71,7 @@ const view = document.getElementById('view');
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.PCFShadowMap; // (three.js has no softer one now: it used this in its place)
 view.append(renderer.domElement);
 const labels = new CSS2DRenderer();
 labels.domElement.style.cssText = 'position:absolute;inset:0;pointer-events:none';
@@ -247,15 +252,27 @@ const bandFrom = new THREE.Vector3(14, 6, 18);
 // (The land is made again only when one of its own sliders moved: the
 // rock's sliders leave it as it is.)
 let landKey = '';
+let rockKey = '';
 let landBands = [];
 function buildHills(anew = true) {
   const s = settings;
-  const key = JSON.stringify([s.landSeed, s.hillCount, s.hilly, s.hardBeds, s.bandTall, s.bandSteep, s.bandUneven, s.bedTilt, s.bedToward, s.contours, s.marks, s.labels]);
+  const shape = [s.landSeed, s.hillCount, s.hilly, s.hardBeds, s.bandTall, s.bandSteep, s.bandUneven, s.bedTilt, s.bedToward];
+  const key = JSON.stringify([...shape, s.contours, s.marks, s.labels]);
+  // (The rock is laid again only when the land's shape or the rock's own
+  // settings change: a row of the view leaves it as it is.)
+  const rock = JSON.stringify([...shape, cliffsOf(s), s.rock, byPlace()]);
   if (anew || key !== landKey) {
     landKey = key;
     buildHillsLand();
   }
-  buildCliffs(landBands);
+  if (anew || rock !== rockKey) {
+    rockKey = rock;
+    buildCliffs(landBands);
+  } else {
+    drawWalk();
+    readout();
+    draw();
+  }
 }
 function buildHillsLand() {
   const started = performance.now();
@@ -624,16 +641,24 @@ function buildAll() {
   walkMarks.visible = landView;
   shadowsReach(landView ? HILLS.size / 2 + 20 : 32);
   if (!landView) {
-    // (Any rock still being laid on the land of hills stops.)
-    cliffRun++;
-    clear(cliffs);
-    clear(coming);
+    // (Any rock still being laid on the land of hills stops, and is laid
+    // afresh on coming back; rock already laid is kept for then. The
+    // land's ground is made again on coming back, as another tab's took
+    // its place.)
+    landKey = '';
+    if (stats.land.rock?.building) {
+      cliffRun++;
+      clear(cliffs);
+      clear(coming);
+      clear(walkMarks);
+      rockKey = '';
+    }
   }
   if (landView) {
     clear(edge);
     clear(slope);
     clear(row);
-    buildHills();
+    buildHills(false);
   } else if (edgeView) {
     clear(hills);
     clear(slope);
@@ -712,6 +737,15 @@ function showCamera() {
 // --- The panel, built from the settings table (src/settings.js) ------------------------------
 
 const gui = new GUI({ title: 'Rock Lab' });
+// A line or two for each row, when it's pointed at (src/settings.js: tip).
+// (The buttons under the view have tips of their own.)
+const ACTION_TIPS = {
+  'look-all': 'Turn the camera to see all of it.',
+  'look-near': 'Turn the camera to see it from near, beside the figure.',
+  'look-side': 'Turn the camera to look along it.',
+  download: 'Save the rocks on show as a 3D model (.glb), with the list of rocks that makes them again. Yours to use for anything.',
+};
+attachTooltips(gui.domElement, (row) => rowOf(row.dataset.row)?.tip ?? ACTION_TIPS[row.dataset.row]);
 
 // What follows a row's change, where that isn't the usual (build).
 const AFTER = {
@@ -764,6 +798,9 @@ function fillPanel() {
   const addFolder = (parent, section, path) => {
     const folder = parent.addFolder(section.title);
     folder.userData = folderKey(path);
+    // (Each part of the panel in a colour of its own; a level folded under
+    // a tab above it, in that level's.)
+    folder.domElement.dataset.tint = section.key.replace(/^below /, '');
     if (!(unfolded.get(folder.userData) ?? section.open)) folder.close();
     return folder;
   };
@@ -782,9 +819,10 @@ function fillPanel() {
       section.rows.forEach((row) => addRow(folder, row));
     }
     if (section.key === 'view') {
-      folder.add(look, 'all').name('look at it all');
-      folder.add(look, 'near').name('look from near');
-      folder.add(look, 'side').name(onEdge() || onLand() ? 'look along it' : 'look at the row');
+      folder.add(look, 'all').name('look at it all').domElement.dataset.row = 'look-all';
+      folder.add(look, 'near').name('look from near').domElement.dataset.row = 'look-near';
+      folder.add(look, 'side').name(onEdge() || onLand() ? 'look along it' : 'look at the row').domElement.dataset.row = 'look-side';
+      folder.add({ download: downloadModel }, 'download').name('download the rocks (.glb)').domElement.dataset.row = 'download';
     }
   }
 }
@@ -887,3 +925,75 @@ window.rocklab = {
     rows: section.parts ? section.parts.map((part) => ({ title: part.title, rows: part.rows.map((r) => r.name) })) : section.rows.map((r) => r.name),
   })),
 };
+
+// --- Which Rock Lab this is, what each release brought, and the welcome ----------------
+
+// The version beside the name (vite.config.js says which build this is); a
+// click shows what each release brought.
+const BUILD = typeof __ROCKLAB__ === 'undefined' ? null : __ROCKLAB__;
+const versionButton = document.getElementById('version');
+versionButton.textContent = versionLabel(BUILD);
+versionButton.title = versionSays(BUILD);
+const log = document.getElementById('log');
+function fillLog() {
+  const list = document.getElementById('log-list');
+  list.replaceChildren(...RELEASES.flatMap((release) => {
+    const head = document.createElement('h3');
+    head.textContent = `${release.version} · ${release.date}: ${release.name}`;
+    const items = document.createElement('ul');
+    for (const change of release.changes) {
+      const item = document.createElement('li');
+      item.textContent = change;
+      items.append(item);
+    }
+    if (!release.post) return [head, items];
+    const more = document.createElement('p');
+    const link = Object.assign(document.createElement('a'), { href: release.post, target: '_blank', rel: 'noopener', textContent: 'Its news post' });
+    more.append(link);
+    return [head, items, more];
+  }));
+}
+versionButton.addEventListener('click', () => {
+  fillLog();
+  log.showModal();
+});
+document.getElementById('log-ok').addEventListener('click', () => log.close());
+document.getElementById('log-news').href = NEWS;
+
+// A first visit opens with a few lines on what to try, unless this viewer
+// asked not to see them again (kept in the browser only).
+const welcome = document.getElementById('welcome');
+document.getElementById('welcome-about').href = ABOUT;
+document.getElementById('welcome-ok').addEventListener('click', () => welcome.close());
+document.getElementById('welcome-never').addEventListener('click', () => {
+  turnWelcomeOff();
+  welcome.close();
+});
+if (showsWelcome()) welcome.showModal();
+
+// --- The rocks on show, as a 3D model ---------------------------------------------------
+
+// Every drawing of rocks on show (not the rock still being laid on the
+// land: it's taken once it's all there), as a .glb file to save.
+async function downloadModel() {
+  if (onLand() && stats.land.rock?.building) {
+    tabSays.textContent = "The rock is still being laid: download it once it's all there.";
+    return;
+  }
+  const meshes = [];
+  for (const group of [edge, slope, row, cliffs]) {
+    if (!group.visible) continue;
+    group.traverse((o) => { if (o.isMesh && o.userData.rocks?.length) meshes.push(o); });
+  }
+  if (!meshes.length) {
+    tabSays.textContent = 'There are no rocks on show to download.';
+    return;
+  }
+  const { blob, rocks } = await exportModel(meshes, { version: BUILD?.version ?? null, tab, settings: { ...settings } });
+  const link = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `rocklab-${tab}-${new Date().toISOString().slice(0, 10)}.glb` });
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 10000);
+  tabSays.textContent = `Saved ${rocks} rocks as a 3D model.`;
+}

@@ -36,6 +36,8 @@ game.
   stone is one group with one outline, marked ground (it can be walked
   over) or wall, by a walk's own limits; nothing too thin or sharp is
   stepped on.
+- **Download** the rocks on show as a 3D model (.glb), with the list of
+  rocks that makes them again inside it.
 - **The core** runs without a page: each rock is handed over as plain
   arrays (its triangles, normals, a colour per facet and its convex
   corners), made in Node as well as in the browser.
@@ -96,7 +98,7 @@ tests with `node --test`.
 | `src/hills.js`, `src/contours.js` | The land of hills and its contour lines |
 | `src/landIn.js`, `src/feet.js`, `src/spots.js`, `src/place.js`, `src/landRock.js` | The land's rock, laid by place: the land as handed over, the feet of its steep ground, the spots along them, the placer, and what it lays with |
 | `src/walk.js` | What the rock says to a walk: ground or wall, each group with one outline |
-| `src/output.js`, `src/rockLook.js` | What is handed over for each rock; its colours and its mesh |
+| `src/output.js`, `src/rockLook.js`, `src/exportModel.js` | What is handed over for each rock; its colours and its mesh; the rocks on show as a 3D model |
 | `scripts/` | The records of the rocks and of a square's cost; the by-hand check of the Cliff tab's sliders |
 | `tests/` | The checks (`npm test`) |
 | `docs/` | How it works, and the way back |

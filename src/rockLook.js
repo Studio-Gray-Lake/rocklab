@@ -7,7 +7,8 @@ export { SUN };
 
 // One mesh for these rocks. tone: one seed and size for them all (a
 // cluster's); without it each rock has its own. The mesh keeps how many
-// triangles it draws (userData.triangles).
+// triangles it draws (userData.triangles), and its rocks (userData.rocks:
+// a download of the model lists them, src/exportModel.js).
 export function drawRocks(rocks, ground, { tone = null } = {}) {
   const out = rockOutput(rocks, ground, { tone });
   const T = out.reduce((sum, o) => sum + o.triangles, 0);
@@ -31,5 +32,6 @@ export function drawRocks(rocks, ground, { tone = null } = {}) {
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   mesh.userData.triangles = T;
+  mesh.userData.rocks = rocks;
   return mesh;
 }
